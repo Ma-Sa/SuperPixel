@@ -1,7 +1,7 @@
 project(SuperPixel)
 
 cmake_minimum_required(VERSION 2.8)
-
+set( SOURCE "src")
 set(CUDA_PROPAGATE_HOST_FLAGS off)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra")
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
@@ -32,9 +32,9 @@ find_package(CUDA REQUIRED)
 
 	endif()
 endif()
-
 if(Pangolin_FOUND AND HAL_FOUND AND CUDA_FOUND)
-    cuda_add_executable( SuperPixel main.cpp FastImgSeg.cpp cudaImgTrans.cu cudaSegEngine.cu cudaSegSLIC.cu cudaUtil.cu )
+    cuda_add_executable( SuperPixel ${SOURCE}/main.cpp ${SOURCE}/FastImgSeg.cpp ${SOURCE}/Point.cpp ${SOURCE}/Density.cpp ${SOURCE}/cudaImgTrans.cu
+	${SOURCE}/cudaSegEngine.cu ${SOURCE}/cudaSegSLIC.cu ${SOURCE}/cudaUtil.cu )
 
 
     include_directories( ${HAL_INCLUDE_DIRS} )
@@ -43,7 +43,7 @@ if(Pangolin_FOUND AND HAL_FOUND AND CUDA_FOUND)
     target_link_libraries(SuperPixel ${HAL_LIBRARIES} )
     target_link_libraries(SuperPixel ${Pangolin_LIBRARIES} )
     target_link_libraries(SuperPixel ${CUDA_LIBRARIES} )
-
+	
     add_dependencies( SuperPixel hal )
     add_dependencies( SuperPixel PbMsgs )
 endif()
