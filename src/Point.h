@@ -18,11 +18,11 @@ public:
 
     struct point{
         unsigned short px,py,pd; //pixel position in image
-
+        float pr; //radius of circle around pixel
         Eigen::Vector3d color;
-        Eigen::Vector3i position;
-        unsigned short depth() { return position[2];} //pixel depth
-        Eigen::Vector3f surfaceNormal;
+        Eigen::Vector3f position;
+        unsigned short depth() { return position[2];}
+        bool valid;
 
     };
 
