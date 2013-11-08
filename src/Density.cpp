@@ -101,7 +101,8 @@ vector<vector<float> > Density::ComputeDensity(cv::Mat depth, unsigned int Radiu
     camera.cy = 271.99f;
     camera.focal = 528.01f;
     camera.z_slope = 0.001f;
-    vector<vector<float> > cnt(depth.rows, vector<float> (depth.cols));
+    vector<vector<float> > cnt;
+    cnt.resize((depth.rows), vector<float>(depth.cols,0));
     for(size_t ii=0; ii < depth.rows ; ++ii)
         for(size_t jj=0; jj < depth.cols ; ++jj){
             p = Point::Create3dPoint(depth, ii, jj);
@@ -119,6 +120,24 @@ vector<vector<float> > Density::ComputeDensity(cv::Mat depth, unsigned int Radiu
         }
 
     return cnt;
+}
+
+cv::Mat Density::PlotDensity(vector<vector<float> > density) {
+    cv::Mat color = cv::Mat::ones(480,640,CV_8UC3);
+    cout<<density[0].size() <<" * "<< density.size() <<endl;
+    for(size_t ii=0; ii < density[0].size(); ++ii)
+    {
+        for(size_t jj=0; jj < density.size() ; ++jj){
+            color.at<cv::Vec3b>(jj,ii)[0] = static_cast<unsigned char> (255.0 * density[jj][ii]);
+            color.at<cv::Vec3b>(jj,ii)[1] = static_cast<unsigned char> (255.0 * density[jj][ii]);
+            color.at<cv::Vec3b>(jj,ii)[2] = static_cast<unsigned char> (255.0 * density[jj][ii]);
+
+
+        }
+    }
+
+    return color;
+
 }
 
 

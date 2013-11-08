@@ -12,14 +12,12 @@ class Density
 {
 public:
     Density();
-
     static vector<vector<float> > ComputeDensity(cv::Mat depth, unsigned int Radius);
-
+    static cv::Mat PlotDensity(vector<vector<float> > density);
     cv::Mat GetDepth() { return mDepth;}
     void SetDepth(cv::Mat depth) { mDepth = depth; }
 
 private:
-
     cv::Mat mDepth;
 };
 
