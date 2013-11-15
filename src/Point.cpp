@@ -2,7 +2,7 @@
 
 namespace superpixel{
 
-Point::point Point::Create3dPoint(cv::Mat depth, int i, int j ){
+Point::point Create3dPoint(cv::Mat depth, int i, int j ){
    Point::point point3D;
    point3D.pd = depth.at<unsigned short>(i,j);
    point3D.px = i;

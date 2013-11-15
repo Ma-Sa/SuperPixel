@@ -182,10 +182,11 @@ for(; !pangolin::ShouldQuit(); nFrame++)
 
         if(ii%2==1){
             cv::Mat depth = cv::Mat (vImgs[ii]);
-            vector < vector<float> > density = Density::ComputeDensity(depth, radius);
+            Eigen::MatrixXf density = Density::ComputeDensity(depth, radius);
             cv::Mat color = Density::PlotDensity(density);
             cv::namedWindow("density");
             cv::imshow("density",color);
+
         }
 
         if(ii%2==0){

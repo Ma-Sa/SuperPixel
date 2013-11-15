@@ -93,7 +93,7 @@ float ComputeArea(cv::Mat depth, Point::point p, float z_f) {
 
 
 
-vector<vector<float> > Density::ComputeDensity(cv::Mat depth, unsigned int Radius) {
+Eigen::MatrixXf ComputeDensity(cv::Mat depth, unsigned int Radius) {
     Point::point p;
     float z_f;
     Camera camera;
@@ -101,20 +101,23 @@ vector<vector<float> > Density::ComputeDensity(cv::Mat depth, unsigned int Radiu
     camera.cy = 271.99f;
     camera.focal = 528.01f;
     camera.z_slope = 0.001f;
-    vector<vector<float> > cnt;
-    cnt.resize((depth.rows), vector<float>(depth.cols,0));
+    Eigen::MatrixXf cnt;
+    cnt.resize((depth.rows), (depth.cols));
     for(size_t ii=0; ii < depth.rows ; ++ii)
         for(size_t jj=0; jj < depth.cols ; ++jj){
             p = Point::Create3dPoint(depth, ii, jj);
             z_f = p.pd / camera.focal;
             if( p.pd == 0 )
                 p.valid = false;
+            else
+                p.valid = true;
             if(p.valid) {
                 p.pr = Radius * (camera.focal / p.pd) ;
                 p.position = camera.unprojectImpl(
                     static_cast<float>(p.px), static_cast<float>(p.py),
                     z_f);
-                cnt[ii][jj] = 1.0f/ComputeArea(depth,p,z_f);
+                cnt(ii,jj) = 1.0f/ComputeArea(depth,p,z_f);
+
             }
 
         }
@@ -122,15 +125,15 @@ vector<vector<float> > Density::ComputeDensity(cv::Mat depth, unsigned int Radiu
     return cnt;
 }
 
-cv::Mat Density::PlotDensity(vector<vector<float> > density) {
+cv::Mat PlotDensity(Eigen::MatrixXf density) {
+
     cv::Mat color = cv::Mat::ones(480,640,CV_8UC3);
-    cout<<density[0].size() <<" * "<< density.size() <<endl;
-    for(size_t ii=0; ii < density[0].size(); ++ii)
+    for(size_t ii=0; ii < density.cols(); ++ii)
     {
-        for(size_t jj=0; jj < density.size() ; ++jj){
-            color.at<cv::Vec3b>(jj,ii)[0] = static_cast<unsigned char> (255.0 * density[jj][ii]);
-            color.at<cv::Vec3b>(jj,ii)[1] = static_cast<unsigned char> (255.0 * density[jj][ii]);
-            color.at<cv::Vec3b>(jj,ii)[2] = static_cast<unsigned char> (255.0 * density[jj][ii]);
+        for(size_t jj=0; jj < density.rows() ; ++jj){
+            color.at<cv::Vec3b>(jj,ii)[0] = static_cast<unsigned char> (255.0 * density(jj,ii));
+            color.at<cv::Vec3b>(jj,ii)[1] = static_cast<unsigned char> (255.0 * density(jj,ii));
+            color.at<cv::Vec3b>(jj,ii)[2] = static_cast<unsigned char> (255.0 * density(jj,ii));
 
 
         }

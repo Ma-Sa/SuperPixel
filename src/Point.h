@@ -2,7 +2,6 @@
 #define POINT_H
 
 #include "Parameters.h"
-
 #include "cv.h"
 #include "highgui.h"
 
@@ -21,6 +20,7 @@ public:
         float pr; //radius of circle around pixel
         Eigen::Vector3d color;
         Eigen::Vector3f position;
+        float weight;
         unsigned short depth() { return position[2];}
         bool valid;
 

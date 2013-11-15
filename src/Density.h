@@ -12,8 +12,8 @@ class Density
 {
 public:
     Density();
-    static vector<vector<float> > ComputeDensity(cv::Mat depth, unsigned int Radius);
-    static cv::Mat PlotDensity(vector<vector<float> > density);
+    static Eigen::MatrixXf ComputeDensity(cv::Mat depth, unsigned int Radius);
+    static cv::Mat PlotDensity(Eigen::MatrixXf density);
     cv::Mat GetDepth() { return mDepth;}
     void SetDepth(cv::Mat depth) { mDepth = depth; }
 
