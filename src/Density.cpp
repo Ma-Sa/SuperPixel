@@ -36,18 +36,18 @@ inline float LocalFiniteDifferencesKinect(K v0, K v1, K v2, K v3, K v4)
     }
 }
 
-inline Eigen::Vector2f LocalDepthGradient(cv::Mat depth, Point::point p, float z_over_f, float window)
+inline Eigen::Vector2f LocalDepthGradient(cv::Mat& depth, Point::point p, float z_over_f, float window)
 {
     // compute w = base_scale*f/d
     unsigned int w = std::max(static_cast<unsigned int>(window + 0.5f), 4u);
     if(w % 2 == 1) w++;
 
     // can not compute the gradient at the border, so return 0
-    if(p.py < w || depth.rows - w <= p.py || p.px < w || depth.cols - w <= p.px) {
+    if(p.px < w || depth.rows - w <= p.px || p.py < w || depth.cols - w <= p.py) {
         return Eigen::Vector2f::Zero();
     }
 
-    float dx = LocalFiniteDifferencesKinect<int>(
+    float dx = 0.001f * LocalFiniteDifferencesKinect<int>(
         depth.at<unsigned short>(p.px-w,p.py),
         depth.at<unsigned short>(p.px-w/2,p.py),
         depth.at<unsigned short>(p.px,p.py),
@@ -55,7 +55,7 @@ inline Eigen::Vector2f LocalDepthGradient(cv::Mat depth, Point::point p, float z
         depth.at<unsigned short>(p.px+w,p.py)
     );
 
-    float dy = LocalFiniteDifferencesKinect<int>(
+    float dy = 0.001f * LocalFiniteDifferencesKinect<int>(
         depth.at<unsigned short>(p.px,p.py-w),
         depth.at<unsigned short>(p.px,p.py-w/2),
         depth.at<unsigned short>(p.px,p.py),
@@ -65,7 +65,6 @@ inline Eigen::Vector2f LocalDepthGradient(cv::Mat depth, Point::point p, float z
 
 
     float scl = 1.0f / (float(w) * z_over_f);
-
     return scl * Eigen::Vector2f(dx,dy);
 }
 
@@ -82,30 +81,33 @@ float FastInverseSqrt(float x) {
 
 
 float ComputeArea(cv::Mat depth, Point::point p, float z_f) {
-    const float pi = 3.14;
+
     Eigen::Vector2f g = LocalDepthGradient(depth, p,z_f, 0.5*p.pr);
     const float gx = g.x();
     const float gy = g.y();
-    const float scl = FastInverseSqrt(gx*gx + gy*gy + 1.0f);
-    return p.pr*p.pr*pi*scl;
+    const float scl = 1.0f / std::sqrt(gx*gx + gy*gy + 1.0f);
+    return p.pr*p.pr*M_PI*scl;
 
 }
 
 
-
-Eigen::MatrixXf ComputeDensity(cv::Mat depth, unsigned int Radius) {
+Eigen::MatrixXf Density::ComputeDensity(cv::Mat& depth, float Radius) {
     Point::point p;
     float z_f;
     Camera camera;
-    camera.cx = 318.39f;
-    camera.cy = 271.99f;
-    camera.focal = 528.01f;
-    camera.z_slope = 0.001f;
+    camera.cx = 235.79f;
+    camera.cy = 314.16f;
+    camera.focal = 535.8f;
+    camera.z_slope = 0.01f;
+    const float NZ_MIN = 0.174f;
     Eigen::MatrixXf cnt;
     cnt.resize((depth.rows), (depth.cols));
     for(size_t ii=0; ii < depth.rows ; ++ii)
         for(size_t jj=0; jj < depth.cols ; ++jj){
-            p = Point::Create3dPoint(depth, ii, jj);
+            //p = Point::Create3dPoint(depth, ii, jj);
+            p.px = ii;
+            p.py = jj;
+            p.pd = depth.at<unsigned short>(ii,jj) * camera.z_slope;
             z_f = p.pd / camera.focal;
             if( p.pd == 0 )
                 p.valid = false;
@@ -116,16 +118,18 @@ Eigen::MatrixXf ComputeDensity(cv::Mat depth, unsigned int Radius) {
                 p.position = camera.unprojectImpl(
                     static_cast<float>(p.px), static_cast<float>(p.py),
                     z_f);
-                cnt(ii,jj) = 1.0f/ComputeArea(depth,p,z_f);
+                cnt(ii,jj) = std::max(NZ_MIN, 1.0f/ComputeArea(depth,p,z_f));
 
             }
-
+            else {
+                cnt(ii,jj) = 0.0f;
+            }
         }
 
     return cnt;
 }
 
-cv::Mat PlotDensity(Eigen::MatrixXf density) {
+cv::Mat Density::PlotDensity(Eigen::MatrixXf density) {
 
     cv::Mat color = cv::Mat::ones(480,640,CV_8UC3);
     for(size_t ii=0; ii < density.cols(); ++ii)

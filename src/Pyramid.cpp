@@ -16,19 +16,19 @@ bool IsPowerOfTwo (unsigned int x)
 
 unsigned int ClosestPowerOfTwo (unsigned int x){
 
-    unsigned int  cnt = std::ceil(std::log(x));
-    unsigned int power;
+    unsigned int  cnt = std::ceil(std::log2(x));
+    unsigned int power = 1;
     for(size_t i = 0; i < cnt; i++)
-        power <<= 1;
+        power = power << 1;
     return power;
 }
 
 unsigned int PowerOfTwoExponent(unsigned int x){
-    return std::ceil(std::log(x));
+    return std::ceil(std::log2(x));
 }
 
 
-Eigen::MatrixXf ImagePadding(Eigen::MatrixXf density){
+Eigen::MatrixXf Pyramid::ImagePadding(Eigen::MatrixXf density){
     unsigned int rows = density.rows();
     unsigned int cols = density.cols();
 
@@ -46,7 +46,7 @@ Eigen::MatrixXf ImagePadding(Eigen::MatrixXf density){
 
 }
 
-Eigen::MatrixXf CreateSmallerImage(Eigen::MatrixXf bigImage){
+Eigen::MatrixXf Pyramid::CreateSmallerImage(Eigen::MatrixXf bigImage){
     unsigned int bigWidth = bigImage.cols();
     unsigned int bigHeight = bigImage.rows();
 
@@ -54,22 +54,16 @@ Eigen::MatrixXf CreateSmallerImage(Eigen::MatrixXf bigImage){
     unsigned int smallHeight = bigHeight / 2;
 
     Eigen::MatrixXf smallImage(smallHeight,smallWidth);
+    smallImage.fill(0.0f);
     unsigned int x,y;
 
+    for(size_t jj=0; jj < smallHeight; ++jj){
     for(size_t ii=0; ii < smallWidth; ++ii){
-        y = ii*2;
-        for(size_t jj=0; jj < smallHeight; ++jj){
-            x=jj*2;
+            x = jj*2;
+            y = ii*2;
 
-            smallImage(jj,ii) += bigImage(x,y);
-
-            if( x+1 < bigHeight)
-                smallImage(jj,ii) += bigImage(x+1,y);
-            if( y+1 < bigWidth)
-                smallImage(jj,ii) += bigImage(x,y+1);
-            if( x+1 < bigHeight && y+1 < bigWidth)
-                smallImage(jj,ii) += bigImage(x+1,y+1);
-            smallImage(jj,ii) /= 4.0f;
+            smallImage(jj,ii) = bigImage(x,y) + bigImage(x+1,y) + bigImage(x,y+1) + bigImage(x+1,y+1);
+         //   smallImage(jj,ii) /= 4.0;
 
         }
 
@@ -79,7 +73,7 @@ Eigen::MatrixXf CreateSmallerImage(Eigen::MatrixXf bigImage){
 
 }
 
-Eigen::MatrixXf CreateBiggerImage(Eigen::MatrixXf smallImage){
+Eigen::MatrixXf Pyramid::CreateBiggerImage(Eigen::MatrixXf smallImage){
     unsigned int smallWidth = smallImage.cols();
     unsigned int smallHeight = smallImage.rows();
 
@@ -109,21 +103,19 @@ Eigen::MatrixXf CreateBiggerImage(Eigen::MatrixXf smallImage){
 
 
 
-std::vector<Eigen::MatrixXf> ComputeMipmaps(Eigen::MatrixXf image, unsigned int smallest){
+std::vector<Eigen::MatrixXf> Pyramid::ComputeMipmaps(Eigen::MatrixXf image, unsigned int smallest){
 
+    unsigned int maxMipmap = PowerOfTwoExponent(std::max(image.rows(),image.cols()));
+    unsigned int minMipmap = PowerOfTwoExponent(smallest);
+    unsigned int numberOfMipmaps = maxMipmap - minMipmap + 1;
+    std::cout<<numberOfMipmaps<<std::endl;
+    std::vector<Eigen::MatrixXf> mipmaps(numberOfMipmaps);
+    mipmaps[0] = ImagePadding(image);
 
-    unsigned int max = PowerOfTwoExponent(std::max(image.rows(),image.cols()));
-    unsigned int min = PowerOfTwoExponent(smallest);
-    unsigned int numberOfMinmaps = max - min + 1;
-
-    std::vector<Eigen::MatrixXf> minmaps(numberOfMinmaps);
-    minmaps[0] = ImagePadding(image);
-
-    for(size_t ii=1; ii<numberOfMinmaps; ++ii){
-        minmaps[ii] = CreateSmallerImage(minmaps[ii-1]);
+    for(size_t ii=1; ii<numberOfMipmaps; ++ii){
+        mipmaps[ii] = CreateSmallerImage(mipmaps[ii-1]);    
     }
-
-    return minmaps;
+    return mipmaps;
 
 }
 

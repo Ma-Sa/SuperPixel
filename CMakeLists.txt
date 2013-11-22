@@ -33,9 +33,7 @@ find_package(CUDA REQUIRED)
 	endif()
 endif()
 if(Pangolin_FOUND AND HAL_FOUND AND CUDA_FOUND)
-    cuda_add_executable( SuperPixel ${SOURCE}/main.cpp ${SOURCE}/FastImgSeg.cpp ${SOURCE}/Pyramid.cpp ${SOURCE}/BlueNoise.cpp ${SOURCE}/Point.cpp ${SOURCE}/Density.cpp ${SOURCE}/cudaImgTrans.cu
-	${SOURCE}/cudaSegEngine.cu ${SOURCE}/cudaSegSLIC.cu ${SOURCE}/cudaUtil.cu )
-
+    cuda_add_executable( SuperPixel ${SOURCE}/main.cpp ${SOURCE}/FastImgSeg.cpp ${SOURCE}/Density.cpp ${SOURCE}/Point.cpp ${SOURCE}/Pyramid.cpp ${SOURCE}/BlueNoise.cpp  ${SOURCE}/cudaImgTrans.cu ${SOURCE}/cudaSegEngine.cu ${SOURCE}/cudaSegSLIC.cu ${SOURCE}/cudaUtil.cu )
 
     include_directories( ${HAL_INCLUDE_DIRS} )
     include_directories( ${Pangolin_INCLUDE_DIRS} )

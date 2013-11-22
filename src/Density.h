@@ -2,6 +2,7 @@
 #define DENSITY_H
 #include <stdio.h>
 #include <Eigen/Eigen>
+#include <cmath>
 #include "Point.h"
 #include "Camera.h"
 
@@ -12,7 +13,7 @@ class Density
 {
 public:
     Density();
-    static Eigen::MatrixXf ComputeDensity(cv::Mat depth, unsigned int Radius);
+    static Eigen::MatrixXf ComputeDensity(cv::Mat &depth, float Radius);
     static cv::Mat PlotDensity(Eigen::MatrixXf density);
     cv::Mat GetDepth() { return mDepth;}
     void SetDepth(cv::Mat depth) { mDepth = depth; }

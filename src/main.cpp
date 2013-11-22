@@ -24,6 +24,7 @@
 
 #include "Point.h"
 #include "Density.h"
+#include "BlueNoise.h"
 
 using namespace std;
 using namespace superpixel;
@@ -131,7 +132,7 @@ int main( int argc, char* argv[] )
     bool bRun = true;
     bool bStep = false;
     unsigned long nFrame=0;
-    unsigned int radius = 3;
+    float radius = 0.025f;
 
     pangolin::RegisterKeyPressCallback(pangolin::PANGO_SPECIAL + pangolin::PANGO_KEY_RIGHT, [&bStep](){bStep=true;} );
 pangolin::RegisterKeyPressCallback(' ', [&](){bRun = !bRun;} );
@@ -183,9 +184,21 @@ for(; !pangolin::ShouldQuit(); nFrame++)
         if(ii%2==1){
             cv::Mat depth = cv::Mat (vImgs[ii]);
             Eigen::MatrixXf density = Density::ComputeDensity(depth, radius);
-            cv::Mat color = Density::PlotDensity(density);
+           // std::cout<<density<<std::endl;
+            cv::Mat densityPlot = Density::PlotDensity(density);
             cv::namedWindow("density");
-            cv::imshow("density",color);
+            cv::imshow("density",densityPlot);
+
+
+
+            std::vector<BlueNoise::node> clusterCenters = BlueNoise::Compute(density);
+            std::cout << clusterCenters.size() <<std::endl;
+            cv::Mat centersPlot = BlueNoise::PlotBlueNoise(clusterCenters);
+            cv::namedWindow("centers");
+            cv::imshow("centers",centersPlot);
+
+           // exit(1);
+
 
         }
 
