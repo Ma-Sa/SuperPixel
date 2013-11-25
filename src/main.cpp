@@ -184,7 +184,8 @@ for(; !pangolin::ShouldQuit(); nFrame++)
         if(ii%2==1){
             cv::Mat depth = cv::Mat (vImgs[ii]);
             Eigen::MatrixXf density = Density::ComputeDensity(depth, radius);
-           // std::cout<<density<<std::endl;
+            std::cout<<density<<std::endl;
+            //exit(1);
             cv::Mat densityPlot = Density::PlotDensity(density);
             cv::namedWindow("density");
             cv::imshow("density",densityPlot);

@@ -72,33 +72,26 @@ inline Eigen::Vector2f LocalDepthGradient(cv::Mat& depth, Point::point p, float 
 
 
 
-float FastInverseSqrt(float x) {
-    uint32_t i = *((uint32_t *)&x);			// evil floating point bit level hacking
-    i = 0x5f3759df - (i >> 1);				// use a magic number
-    float s = *((float *)&i);				// get back guess
-    return s * (1.5f - 0.5f * x * s * s);	// one newton iteration
-}
-
-
 float ComputeArea(cv::Mat depth, Point::point p, float z_f) {
 
-    Eigen::Vector2f g = LocalDepthGradient(depth, p,z_f, 0.5*p.pr);
-    const float gx = g.x();
-    const float gy = g.y();
-    const float scl = 1.0f / std::sqrt(gx*gx + gy*gy + 1.0f);
-    return p.pr*p.pr*M_PI*scl;
+//    Eigen::Vector2f g = LocalDepthGradient(depth, p,z_f, 0.5*p.pr);
+//    const float gx = g.x();
+//    const float gy = g.y();
+//    const float scl = 1.0f / std::sqrt(gx*gx + gy*gy + 1.0f);
+//    return p.pr*p.pr*M_PI*scl;
+    return p.pr * p.pr * M_PI;
 
 }
 
 
-Eigen::MatrixXf Density::ComputeDensity(cv::Mat& depth, float Radius) {
+Eigen::MatrixXf Density::ComputeDensity(cv::Mat& depth, float radius) {
     Point::point p;
     float z_f;
     Camera camera;
     camera.cx = 235.79f;
     camera.cy = 314.16f;
     camera.focal = 535.8f;
-    camera.z_slope = 0.01f;
+    camera.z_slope = 0.001f;
     const float NZ_MIN = 0.174f;
     Eigen::MatrixXf cnt;
     cnt.resize((depth.rows), (depth.cols));
@@ -107,21 +100,26 @@ Eigen::MatrixXf Density::ComputeDensity(cv::Mat& depth, float Radius) {
             //p = Point::Create3dPoint(depth, ii, jj);
             p.px = ii;
             p.py = jj;
-            p.pd = depth.at<unsigned short>(ii,jj) * camera.z_slope;
+            p.pd = depth.at<unsigned short>(ii,jj) * 0.001f;
             z_f = p.pd / camera.focal;
-            if( p.pd == 0 )
-                p.valid = false;
-            else
+            if( depth.at<unsigned short>(ii,jj) != 0 )
                 p.valid = true;
+            else
+                p.valid = false;
             if(p.valid) {
-                p.pr = Radius * (camera.focal / p.pd) ;
+                p.pr = radius * (camera.focal / p.pd) ;
                 p.position = camera.unprojectImpl(
                     static_cast<float>(p.px), static_cast<float>(p.py),
                     z_f);
-                cnt(ii,jj) = std::max(NZ_MIN, 1.0f/ComputeArea(depth,p,z_f));
+                Eigen::Vector2f gradient = LocalDepthGradient(depth, p, z_f, 0.5f*p.pr);
+                p.setNormalFromGradient(gradient);
+                cnt(ii,jj) = 1 / ComputeArea(depth,p,z_f);
+                cnt(ii,jj) /= std::max(NZ_MIN, std::abs(p.normal.z()));
 
             }
             else {
+                p.pr = 0.0f;
+                p.normal = Eigen::Vector3f(0,0,-1);
                 cnt(ii,jj) = 0.0f;
             }
         }
@@ -132,12 +130,13 @@ Eigen::MatrixXf Density::ComputeDensity(cv::Mat& depth, float Radius) {
 cv::Mat Density::PlotDensity(Eigen::MatrixXf density) {
 
     cv::Mat color = cv::Mat::ones(480,640,CV_8UC3);
+    float max = density.maxCoeff();
     for(size_t ii=0; ii < density.cols(); ++ii)
     {
         for(size_t jj=0; jj < density.rows() ; ++jj){
-            color.at<cv::Vec3b>(jj,ii)[0] = static_cast<unsigned char> (255.0 * density(jj,ii));
-            color.at<cv::Vec3b>(jj,ii)[1] = static_cast<unsigned char> (255.0 * density(jj,ii));
-            color.at<cv::Vec3b>(jj,ii)[2] = static_cast<unsigned char> (255.0 * density(jj,ii));
+            color.at<cv::Vec3b>(jj,ii)[0] = static_cast<unsigned char> (255.0 * density(jj,ii) / (max));
+            color.at<cv::Vec3b>(jj,ii)[1] = static_cast<unsigned char> (255.0 * density(jj,ii) / (max));
+            color.at<cv::Vec3b>(jj,ii)[2] = static_cast<unsigned char> (255.0 * density(jj,ii) / (max));
 
 
         }

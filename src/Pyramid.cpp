@@ -112,9 +112,15 @@ std::vector<Eigen::MatrixXf> Pyramid::ComputeMipmaps(Eigen::MatrixXf image, unsi
     std::vector<Eigen::MatrixXf> mipmaps(numberOfMipmaps);
     mipmaps[0] = ImagePadding(image);
 
+
     for(size_t ii=1; ii<numberOfMipmaps; ++ii){
         mipmaps[ii] = CreateSmallerImage(mipmaps[ii-1]);    
     }
+
+    //std::cout<<mipmaps[3]<<std::endl;
+    //exit(1);
+
+
     return mipmaps;
 
 }

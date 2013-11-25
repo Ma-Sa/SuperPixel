@@ -16,7 +16,7 @@ std::vector<unsigned int> RandomScan(Eigen::MatrixXf image){
 
 }
 
-BlueNoise::node CreateNode(Eigen::MatrixXf mipmap, unsigned int idx, unsigned int p){
+BlueNoise::node CreateNode(Eigen::MatrixXf& mipmap, unsigned int idx, unsigned int p){
     BlueNoise::node node;
     //eigen matrix data are stored columnwise
     node.x = idx % mipmap.rows();
@@ -66,8 +66,8 @@ Eigen::MatrixXf ComputeApproximation(std::vector<BlueNoise::node> points,Eigen::
 
 
 float ComputeEnergy(Eigen::MatrixXf density, std::vector<BlueNoise::node> points){
-   // std::cout<<"apx "<<ComputeApproximation(points,density)<<std::endl;
-   // std::cout<<"density "<< density<<std::endl;
+    std::cout<<"apx "<<ComputeApproximation(points,density)<<std::endl;
+    std::cout<<"density "<< density<<std::endl;
     return (ComputeApproximation(points,density)-density).cwiseAbs().sum();
 }
 
