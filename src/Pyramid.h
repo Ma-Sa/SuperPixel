@@ -11,10 +11,10 @@ class Pyramid
 {
 public:
     Pyramid();
-    static Eigen::MatrixXf ImagePadding(Eigen::MatrixXf density);
-    static Eigen::MatrixXf CreateSmallerImage(Eigen::MatrixXf bigImage);
+    static Eigen::MatrixXf ImagePadding(Eigen::MatrixXf& img_big);
+    static Eigen::MatrixXf CreateSmallerImage(Eigen::MatrixXf &img_big);
     static Eigen::MatrixXf CreateBiggerImage(Eigen::MatrixXf smallImage);
-    static std::vector<Eigen::MatrixXf> ComputeMipmaps(Eigen::MatrixXf image, unsigned int smallest);
+    static std::vector<Eigen::MatrixXf> ComputeMipmaps(Eigen::MatrixXf &image, unsigned int smallest);
 
 };
 

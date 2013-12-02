@@ -184,7 +184,7 @@ for(; !pangolin::ShouldQuit(); nFrame++)
         if(ii%2==1){
             cv::Mat depth = cv::Mat (vImgs[ii]);
             Eigen::MatrixXf density = Density::ComputeDensity(depth, radius);
-            std::cout<<density<<std::endl;
+            //std::cout<<density<<std::endl;
             //exit(1);
             cv::Mat densityPlot = Density::PlotDensity(density);
             cv::namedWindow("density");
@@ -193,12 +193,12 @@ for(; !pangolin::ShouldQuit(); nFrame++)
 
 
             std::vector<BlueNoise::node> clusterCenters = BlueNoise::Compute(density);
-            std::cout << clusterCenters.size() <<std::endl;
+            //std::cout << clusterCenters.size() <<std::endl;
             cv::Mat centersPlot = BlueNoise::PlotBlueNoise(clusterCenters);
             cv::namedWindow("centers");
             cv::imshow("centers",centersPlot);
 
-           // exit(1);
+            //exit(1);
 
 
         }

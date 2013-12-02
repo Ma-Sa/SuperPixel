@@ -16,7 +16,7 @@ public:
     Point();
 
     struct point{
-        unsigned short px,py; //pixel position in image
+        unsigned int px,py; //pixel position in image
         float pd;
         float pr; //radius of circle around pixel
         Eigen::Vector3d color;

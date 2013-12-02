@@ -5,6 +5,7 @@
 #include "Pyramid.h"
 #include <vector>
 #include <Eigen/Eigen>
+#include <boost/random.hpp>
 
 namespace superpixel{
 class BlueNoise
@@ -12,7 +13,8 @@ class BlueNoise
 public:
     BlueNoise();
     struct node{
-        int x,y,q;
+        float x,y;
+        int q;
         float scale, weight;
     };
 
