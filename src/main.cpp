@@ -132,9 +132,9 @@ int main( int argc, char* argv[] )
     bool bRun = true;
     bool bStep = false;
     unsigned long nFrame=0;
-    float radius = 0.025f;
 
-    pangolin::RegisterKeyPressCallback(pangolin::PANGO_SPECIAL + pangolin::PANGO_KEY_RIGHT, [&bStep](){bStep=true;} );
+
+pangolin::RegisterKeyPressCallback(pangolin::PANGO_SPECIAL + pangolin::PANGO_KEY_RIGHT, [&bStep](){bStep=true;} );
 pangolin::RegisterKeyPressCallback(' ', [&](){bRun = !bRun;} );
 pangolin::RegisterKeyPressCallback('l', [&](){ g_bLog = !g_bLog; nFrame = 0; } );
 
@@ -175,28 +175,33 @@ for(; !pangolin::ShouldQuit(); nFrame++)
                     );
     }
 
+    float radius = 0.025f;
+    Camera camera;
+    camera.cx = 235.79f;
+    camera.cy = 314.16f;
+    camera.focal = 535.8f;
+
     for(size_t ii=0; ii<nNumChannels; ++ii ) {
         cameraView[ii].Activate();
         glTex.Upload( vImgs[ii].data(), vImgs[ii].Format(), vImgs[ii].Type() );
         glTex.RenderToViewportFlipY();
-        cv::Mat test = cv::Mat (vImgs[ii]);
 
         if(ii%2==1){
             cv::Mat depth = cv::Mat (vImgs[ii]);
-            Eigen::MatrixXf density = Density::ComputeDensity(depth, radius);
+            std::vector<Point::point> imagePoints = Point::CreateImagePoints(depth, radius, camera);
+            Eigen::MatrixXf density = Density::ComputeDensity(imagePoints, depth.rows,depth.cols);
             //std::cout<<density<<std::endl;
-            //exit(1);
             cv::Mat densityPlot = Density::PlotDensity(density);
             cv::namedWindow("density");
             cv::imshow("density",densityPlot);
 
 
 
-            std::vector<BlueNoise::node> clusterCenters = BlueNoise::Compute(density);
+          //  std::vector<BlueNoise::node> clusterCenters = BlueNoise::Compute(density);
             //std::cout << clusterCenters.size() <<std::endl;
-            cv::Mat centersPlot = BlueNoise::PlotBlueNoise(clusterCenters);
-            cv::namedWindow("centers");
-            cv::imshow("centers",centersPlot);
+           // cv::Mat centersPlot = BlueNoise::PlotBlueNoise(clusterCenters);
+          //  cv::namedWindow("centers");
+          //  cv::imshow("centers",centersPlot);
 
             //exit(1);
 

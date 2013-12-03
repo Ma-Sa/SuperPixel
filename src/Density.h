@@ -13,7 +13,7 @@ class Density
 {
 public:
     Density();
-    static Eigen::MatrixXf ComputeDensity(cv::Mat &depth, float Radius);
+    static Eigen::MatrixXf ComputeDensity(std::vector<Point::point>& imagePoints, unsigned int rows, unsigned int cols );
     static cv::Mat PlotDensity(Eigen::MatrixXf density);
     cv::Mat GetDepth() { return mDepth;}
     void SetDepth(cv::Mat depth) { mDepth = depth; }

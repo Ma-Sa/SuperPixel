@@ -1,12 +1,13 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <Eigen/Eigen>
+
 namespace superpixel{
 struct Camera
 {
     float cx, cy;
     float focal;
-    float z_slope;
 
 
     /** Projects a 3D point into the image plane */
@@ -27,28 +28,11 @@ struct Camera
         );
     }
 
-    /** Gets kinect depth for a 3D point */
-    uint16_t depth(const Eigen::Vector3f& p) const {
-        return convertMeterToKinect(p[2]);
-    }
-
-    /** Convert kinect depth to meter */
-    float convertKinectToMeter(uint16_t d) const {
-        return static_cast<float>(d) * z_slope;
-    }
-
-    float convertKinectToMeter(int d) const {
-        return static_cast<float>(d) * z_slope;
-    }
-
     float convertKinectToMeter(float d) const {
-        return d * z_slope;
+        return d * 0.001f;
     }
 
-    /** Convert meter to kinect depth */
-    uint16_t convertMeterToKinect(float z) const {
-        return static_cast<uint16_t>(z / z_slope);
-    }
+
 
 
 };
